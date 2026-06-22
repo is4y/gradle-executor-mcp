@@ -42,3 +42,26 @@ test("validateArgs gates -D/-P on allowPropertyFlags", () => {
   expect(validateArgs(["-Dfoo=bar"], true)).toEqual(["-Dfoo=bar"]);
   expect(validateArgs(["-Pprod"], true)).toEqual(["-Pprod"]);
 });
+
+test("validateArgs blocks attached short-option forms (bypass fix)", () => {
+  // Each of these would bypass the exact-match check — they must now throw
+  for (const bad of [
+    ["-I/tmp/x"], ["-Iscript.gradle"],
+    ["-bbuild.gradle"], ["-b/path/x"],
+    ["-c/x"], ["-csettings.gradle"],
+    ["-p/other"], ["-p/etc"],
+  ]) {
+    expect(() => validateArgs(bad, false)).toThrow(PolicyError);
+  }
+});
+
+test("validateArgs still allows benign flags after bypass fix", () => {
+  // These must NOT be blocked: different letter case or long-form
+  const benign = [
+    ["-i"], ["--info"], ["--stacktrace"], ["--no-daemon"], ["--offline"],
+    ["--console=plain"], ["--build-cache"], ["--continue"], ["--parallel"], ["--profile"],
+  ];
+  for (const flags of benign) {
+    expect(validateArgs(flags, false)).toEqual(flags);
+  }
+});
