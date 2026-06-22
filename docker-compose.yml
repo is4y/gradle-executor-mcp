@@ -13,7 +13,7 @@ services:
       # JAVA_OPTS: "-Dhttps.proxyHost=proxy -Dhttps.proxyPort=3128"
     volumes:
       - ./your-gradle-project:/project:rw      # the mounted project
-      - gradle-cache:/home/bun/.gradle         # persist Gradle caches
+      - gradle-cache:/home/app/.gradle         # persist Gradle caches
     # --- hardening ---
     read_only: true
     tmpfs:

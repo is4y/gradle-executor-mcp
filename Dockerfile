@@ -1,20 +1,19 @@
-# Bun provides the runtime; add a JDK so Gradle can run.
-FROM oven/bun:1-debian
-
-# Install a JDK (Gradle needs a JVM). The project's ./gradlew downloads the
-# correct Gradle distribution on first use.
-RUN apt-get update \
- && apt-get install -y --no-install-recommends openjdk-17-jdk-headless ca-certificates \
- && rm -rf /var/lib/apt/lists/*
-
-WORKDIR /app
+# --- Builder: compile the server to a standalone binary with Bun. ---
+FROM oven/bun:1-debian AS builder
+WORKDIR /build
 COPY package.json bun.lock ./
 RUN bun install --frozen-lockfile
 COPY src ./src
+# Bundles @modelcontextprotocol/sdk + zod + the Bun runtime into one executable.
+RUN bun build --compile --minify --sourcemap ./src/server.ts --outfile gradle-mcp
 
-# Run as the non-root 'bun' user provided by the base image.
-USER bun
-
-ENV PORT=3000
+# --- Runtime: JDK only (Gradle needs a JVM); no Bun, no node_modules, no source. ---
+FROM eclipse-temurin:17-jdk-jammy
+# Temurin ships no non-root user; create one. Home backs Gradle's $HOME/.gradle cache.
+RUN useradd --create-home --uid 1000 app
+WORKDIR /app
+COPY --from=builder --chown=app:app /build/gradle-mcp ./gradle-mcp
+USER app
+ENV HOME=/home/app PORT=3000
 EXPOSE 3000
-CMD ["bun", "run", "src/server.ts"]
+CMD ["./gradle-mcp"]

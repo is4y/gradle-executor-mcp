@@ -1,3 +1,4 @@
 .devenv
 node_modules
 .superpowers
+/gradle-mcp
