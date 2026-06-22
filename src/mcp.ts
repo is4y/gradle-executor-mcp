@@ -33,7 +33,6 @@ export function createMcpServer(deps: ToolDeps): McpServer {
       description: "Run a single Gradle task in the mounted project.",
       inputSchema: {
         task: z.string().describe("Exactly one Gradle task name, e.g. 'build'"),
-        args: z.array(z.string()).optional().describe("Extra Gradle flags (denylisted flags are rejected)"),
         maxOutputLines: z.number().int().positive().optional().describe("Tail this many output lines"),
       },
     },
@@ -52,7 +51,6 @@ export function createMcpServer(deps: ToolDeps): McpServer {
       description: "Run the 'test' task, optionally filtered with --tests patterns.",
       inputSchema: {
         tests: z.array(z.string()).optional().describe("JUnit test filters, e.g. 'com.x.MyTest'"),
-        args: z.array(z.string()).optional().describe("Extra Gradle flags (denylisted flags are rejected)"),
         maxOutputLines: z.number().int().positive().optional().describe("Tail this many output lines"),
       },
     },

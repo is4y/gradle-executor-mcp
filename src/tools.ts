@@ -3,7 +3,7 @@ import type { GradleResult } from "./gradle-runner";
 import { runGradle } from "./gradle-runner";
 import { SerialQueue } from "./queue";
 import { tailLines } from "./output";
-import { validateTask, validateArgs, validateTestFilters } from "./arg-policy";
+import { validateTask, validateTestFilters } from "./arg-policy";
 
 export interface ToolDeps {
   config: Config;
@@ -18,16 +18,12 @@ export interface ToolResult {
   timedOut: boolean;
 }
 
-export function buildArgvForTask(task: string, args: string[], allowPropertyFlags: boolean): string[] {
-  const t = validateTask(task);
-  const a = validateArgs(args, allowPropertyFlags);
-  return [t, ...a];
+export function buildArgvForTask(task: string): string[] {
+  return [validateTask(task)];
 }
 
-export function buildArgvForTests(tests: string[], args: string[], allowPropertyFlags: boolean): string[] {
-  const filters = validateTestFilters(tests);
-  const a = validateArgs(args, allowPropertyFlags);
-  return ["test", ...filters, ...a];
+export function buildArgvForTests(tests: string[]): string[] {
+  return ["test", ...validateTestFilters(tests)];
 }
 
 function clamp(deps: ToolDeps, maxOutputLines: number | undefined): number {
@@ -53,16 +49,16 @@ export async function listTasks(deps: ToolDeps): Promise<ToolResult> {
 
 export async function runGradleTask(
   deps: ToolDeps,
-  input: { task: string; args?: string[]; maxOutputLines?: number },
+  input: { task: string; maxOutputLines?: number },
 ): Promise<ToolResult> {
-  const argv = buildArgvForTask(input.task, input.args ?? [], deps.config.allowPropertyFlags);
+  const argv = buildArgvForTask(input.task);
   return execute(deps, argv, clamp(deps, input.maxOutputLines));
 }
 
 export async function runTests(
   deps: ToolDeps,
-  input: { tests?: string[]; args?: string[]; maxOutputLines?: number },
+  input: { tests?: string[]; maxOutputLines?: number },
 ): Promise<ToolResult> {
-  const argv = buildArgvForTests(input.tests ?? [], input.args ?? [], deps.config.allowPropertyFlags);
+  const argv = buildArgvForTests(input.tests ?? []);
   return execute(deps, argv, clamp(deps, input.maxOutputLines));
 }

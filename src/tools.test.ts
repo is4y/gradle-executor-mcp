@@ -18,16 +18,16 @@ function fakeRun(captured: string[][]): (dir: string, argv: string[], t: number)
 }
 
 test("buildArgvForTask validates and assembles argv", () => {
-  expect(buildArgvForTask("build", ["--stacktrace"], false)).toEqual(["build", "--stacktrace"]);
+  expect(buildArgvForTask("build")).toEqual(["build"]);
 });
 
 test("buildArgvForTask rejects bad task before building", () => {
-  expect(() => buildArgvForTask("a; rm", [], false)).toThrow(PolicyError);
+  expect(() => buildArgvForTask("a; rm")).toThrow(PolicyError);
 });
 
 test("buildArgvForTests prepends 'test' and --tests filters", () => {
-  expect(buildArgvForTests(["com.x.T"], ["--info"], false))
-    .toEqual(["test", "--tests", "com.x.T", "--info"]);
+  expect(buildArgvForTests(["com.x.T"]))
+    .toEqual(["test", "--tests", "com.x.T"]);
 });
 
 test("runGradleTask passes argv to runner and clamps output", async () => {
@@ -51,12 +51,4 @@ test("listTasks runs the 'tasks' task", async () => {
   const deps = { config, queue: new SerialQueue(), run: fakeRun(captured) };
   await listTasks(deps);
   expect(captured[0]).toEqual(["tasks"]);
-});
-
-test("policy violation rejects without executing", async () => {
-  const captured: string[][] = [];
-  const deps = { config, queue: new SerialQueue(), run: fakeRun(captured) };
-  await expect(runGradleTask(deps, { task: "ok", args: ["--init-script", "x"] }))
-    .rejects.toThrow(PolicyError);
-  expect(captured.length).toBe(0);
 });
