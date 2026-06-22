@@ -4,7 +4,6 @@ export interface Config {
   gradleTimeoutMs: number;
   defaultOutputLines: number;
   maxOutputLines: number;
-  allowPropertyFlags: boolean;
 }
 
 function num(value: string | undefined, fallback: number): number {
@@ -23,6 +22,5 @@ export function loadConfig(env: Record<string, string | undefined>): Config {
     gradleTimeoutMs: num(env.GRADLE_TIMEOUT_MS, 600000),
     defaultOutputLines: num(env.DEFAULT_OUTPUT_LINES, 500),
     maxOutputLines: num(env.MAX_OUTPUT_LINES, 5000),
-    allowPropertyFlags: env.ALLOW_PROPERTY_FLAGS?.trim().toLowerCase() === "true",
   };
 }

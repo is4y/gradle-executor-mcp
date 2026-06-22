@@ -7,7 +7,7 @@ import type { GradleResult } from "./gradle-runner";
 
 const config: Config = {
   projectDir: "/p", port: 3000, gradleTimeoutMs: 1000,
-  defaultOutputLines: 500, maxOutputLines: 3, allowPropertyFlags: false,
+  defaultOutputLines: 500, maxOutputLines: 3,
 };
 
 function fakeRun(captured: string[][]): (dir: string, argv: string[], t: number) => Promise<GradleResult> {

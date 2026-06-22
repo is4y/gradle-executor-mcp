@@ -5,7 +5,7 @@ import type { Config } from "./config";
 
 const config: Config = {
   projectDir: "/p", port: 3000, gradleTimeoutMs: 1000,
-  defaultOutputLines: 500, maxOutputLines: 5000, allowPropertyFlags: false,
+  defaultOutputLines: 500, maxOutputLines: 5000,
 };
 
 test("registers exactly the three expected tools", () => {

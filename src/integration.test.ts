@@ -10,7 +10,7 @@ const hasGradle = which("gradle") !== null;
 
 const config: Config = {
   projectDir, port: 3000, gradleTimeoutMs: 120000,
-  defaultOutputLines: 1000, maxOutputLines: 5000, allowPropertyFlags: false,
+  defaultOutputLines: 1000, maxOutputLines: 5000,
 };
 const deps = { config, queue: new SerialQueue(), run: runGradle };
 
