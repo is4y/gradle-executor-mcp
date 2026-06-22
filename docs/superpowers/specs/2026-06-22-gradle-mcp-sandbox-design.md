@@ -83,7 +83,8 @@ Each unit has one purpose, a clear interface, and is testable in isolation.
 
 ### `list_tasks()`
 - No agent-supplied arguments.
-- Runs `gradle tasks` and returns the task listing text (tail-limited to `DEFAULT_OUTPUT_LINES`).
+- Runs the `tasks` task through `gradle-runner` (so the same wrapper-preferred resolution
+  applies) and returns the task listing text (tail-limited to `DEFAULT_OUTPUT_LINES`).
 
 ### `run_gradle_task({ task: string, args?: string[], maxOutputLines?: number })`
 - Exactly **one** task per call.
