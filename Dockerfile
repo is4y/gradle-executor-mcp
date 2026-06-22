@@ -8,7 +8,7 @@ COPY src ./src
 RUN bun build --compile --minify --sourcemap ./src/server.ts --outfile gradle-mcp
 
 # --- Runtime: JDK only (Gradle needs a JVM); no Bun, no node_modules, no source. ---
-FROM eclipse-temurin:17-jdk-jammy
+FROM eclipse-temurin:21-jdk-jammy
 # Temurin ships no non-root user; create one. Home backs Gradle's $HOME/.gradle cache.
 RUN useradd --create-home --uid 1000 app
 WORKDIR /app

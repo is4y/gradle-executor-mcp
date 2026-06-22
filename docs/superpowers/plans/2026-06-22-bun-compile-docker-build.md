@@ -4,14 +4,14 @@
 
 **Goal:** Rewrite the container image as a two-stage build that compiles the server to a standalone binary with `bun build --compile` and ships it on a slim JDK runtime.
 
-**Architecture:** A builder stage on `oven/bun:1-debian` compiles `src/server.ts` into a single executable; a runtime stage on `eclipse-temurin:17-jdk-jammy` receives only that binary plus the JDK Gradle needs. The runtime user changes from the Bun image's `bun` user to a new `app` user, so the `docker-compose.yml` Gradle-cache volume path moves to match.
+**Architecture:** A builder stage on `oven/bun:1-debian` compiles `src/server.ts` into a single executable; a runtime stage on `eclipse-temurin:21-jdk-jammy` receives only that binary plus the JDK Gradle needs. The runtime user changes from the Bun image's `bun` user to a new `app` user, so the `docker-compose.yml` Gradle-cache volume path moves to match.
 
-**Tech Stack:** Docker multi-stage build, Bun 1.x (`bun build --compile`), Eclipse Temurin JDK 17, Docker Compose.
+**Tech Stack:** Docker multi-stage build, Bun 1.x (`bun build --compile`), Eclipse Temurin JDK 21, Docker Compose.
 
 ## Global Constraints
 
 - The compiled Bun binary is **glibc-linked** — runtime base must be glibc (Ubuntu/Debian), never musl/Alpine.
-- Runtime image must contain **JDK 17** (`eclipse-temurin:17-jdk-jammy`).
+- Runtime image must contain **JDK 21** (`eclipse-temurin:21-jdk-jammy`).
 - Image runs under existing hardening: read-only root FS, tmpfs `/tmp`, `cap_drop: ALL`, `no-new-privileges`, non-root user.
 - Runtime user is `app`, uid `1000`, home `/home/app`; `HOME=/home/app` so Gradle's default `$HOME/.gradle` cache aligns with the mounted cache volume.
 - Application source (`src/`) and tests are NOT changed — packaging only.
@@ -68,7 +68,7 @@ COPY src ./src
 RUN bun build --compile --minify --sourcemap ./src/server.ts --outfile gradle-mcp
 
 # --- Runtime: JDK only (Gradle needs a JVM); no Bun, no node_modules, no source. ---
-FROM eclipse-temurin:17-jdk-jammy
+FROM eclipse-temurin:21-jdk-jammy
 # Temurin ships no non-root user; create one. Home backs Gradle's $HOME/.gradle cache.
 RUN useradd --create-home --uid 1000 app
 WORKDIR /app
@@ -150,13 +150,13 @@ git commit -m "build: compile server to standalone binary in multi-stage Docker 
 
 - [ ] **Step 8: Record the Docker-build follow-up**
 
-Docker is unavailable in this environment, so the full image build could not be exercised here. Note for the user (do not block): in a Docker-capable environment, run `docker compose build` then `docker compose up`, and confirm (a) the build succeeds, (b) `tools/list` over `http://127.0.0.1:3000/` returns the three tools, and (c) `docker compose exec gradle-mcp java -version` reports JDK 17.
+Docker is unavailable in this environment, so the full image build could not be exercised here. Note for the user (do not block): in a Docker-capable environment, run `docker compose build` then `docker compose up`, and confirm (a) the build succeeds, (b) `tools/list` over `http://127.0.0.1:3000/` returns the three tools, and (c) `docker compose exec gradle-mcp java -version` reports JDK 21.
 
 ---
 
 ## Self-review notes
 
-- **Spec coverage:** builder stage (Step 2), runtime stage + `app`/uid-1000/`/home/app` + `HOME` (Step 2), `--compile --minify --sourcemap` flags (Steps 2 & 4), compose volume path move (Step 3), glibc/JDK-17 constraints (Global Constraints + Step 2 base images), "packaging only / dev unchanged / .dockerignore unchanged" (Global Constraints + file-impact note). Every spec section maps to a step.
+- **Spec coverage:** builder stage (Step 2), runtime stage + `app`/uid-1000/`/home/app` + `HOME` (Step 2), `--compile --minify --sourcemap` flags (Steps 2 & 4), compose volume path move (Step 3), glibc/JDK-21 constraints (Global Constraints + Step 2 base images), "packaging only / dev unchanged / .dockerignore unchanged" (Global Constraints + file-impact note). Every spec section maps to a step.
 - **Verification honesty:** the spec's verification lists `docker compose build/up`, `tools/list`, and `java -version`. Docker is not runnable here, so Steps 4–6 verify the highest-risk part (the compile command yields a working server binary) locally, and Step 8 records the Docker-level checks verbatim as a user follow-up rather than silently dropping them.
 - **No placeholders:** every step has concrete file contents or exact commands with expected output.
 - **Consistency:** `HOME=/home/app` (Dockerfile) ↔ `/home/app/.gradle` (compose) ↔ uid 1000 are identical across Steps 2, 3, and 6.

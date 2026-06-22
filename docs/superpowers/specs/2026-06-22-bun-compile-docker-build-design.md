@@ -24,7 +24,7 @@ runtime layer.
 
 - The compiled Bun binary is **glibc-linked**, so the runtime base must be
   glibc-based (Ubuntu/Debian), not musl/Alpine.
-- The runtime image must contain a **JDK 17** (Gradle needs a JVM; `javac` is
+- The runtime image must contain a **JDK 21** (Gradle needs a JVM; `javac` is
   needed for projects that compile Java).
 - The image runs under the existing hardening in `docker-compose.yml`:
   read-only root filesystem, tmpfs `/tmp`, `cap_drop: ALL`,
@@ -51,7 +51,7 @@ RUN bun build --compile --minify --sourcemap ./src/server.ts --outfile gradle-mc
 ### Runtime stage
 
 ```dockerfile
-FROM eclipse-temurin:17-jdk-jammy
+FROM eclipse-temurin:21-jdk-jammy
 RUN useradd --create-home --uid 1000 app
 WORKDIR /app
 COPY --from=builder --chown=app:app /build/gradle-mcp ./gradle-mcp
@@ -61,7 +61,7 @@ EXPOSE 3000
 CMD ["./gradle-mcp"]
 ```
 
-- `eclipse-temurin:17-jdk-jammy` provides JDK 17 on Ubuntu 22.04 (glibc) and
+- `eclipse-temurin:21-jdk-jammy` provides JDK 21 on Ubuntu 22.04 (glibc) and
   ships `ca-certificates`.
 - Temurin has no pre-made non-root user, so we create `app` (uid 1000, home
   `/home/app`).
@@ -87,13 +87,13 @@ tmpfs `/tmp`, `cap_drop: ALL`, `security_opt: no-new-privileges:true`,
 - `docker compose up` starts the container; the server listens on port 3000
   and a JSON-RPC `tools/list` request to `http://127.0.0.1:3000/` returns the
   three tools (`list_tasks`, `run_gradle_task`, `run_tests`).
-- Inside the running container, `java -version` reports JDK 17 (JVM present),
+- Inside the running container, `java -version` reports JDK 21 (JVM present),
   and the process runs as uid 1000 under the read-only root filesystem.
 
 ## Out of scope / unchanged
 
 - Local development stays on `bun run` — `package.json` scripts are untouched.
-- JDK version stays at 17.
+- JDK version is 21 (bumped from the original image's 17 — a current LTS with broad Gradle support).
 - `.dockerignore` already excludes `.git`, `.devenv`, `node_modules`, `docs`,
   and `tests/fixtures`; no change needed.
 - Application source (`src/`) and tests are unchanged — this is a packaging
