@@ -1,0 +1,6 @@
+tasks.register('succeed') {
+    doLast { println 'SUCCEED_OK' }
+}
+tasks.register('fail') {
+    doLast { throw new GradleException('intentional failure') }
+}
