@@ -1,0 +1,31 @@
+services:
+  gradle-mcp:
+    build: .
+    ports:
+      - "127.0.0.1:3000:3000"   # bind to loopback only; rely on network isolation
+    environment:
+      PROJECT_DIR: /project
+      PORT: "3000"
+      GRADLE_TIMEOUT_MS: "600000"
+      DEFAULT_OUTPUT_LINES: "500"
+      MAX_OUTPUT_LINES: "5000"
+      # ALLOW_PROPERTY_FLAGS: "true"   # opt-in to -D/-P
+      # Egress control via Gradle proxy (point at an allowlisting proxy):
+      # JAVA_OPTS: "-Dhttps.proxyHost=proxy -Dhttps.proxyPort=3128"
+    volumes:
+      - ./your-gradle-project:/project:rw      # the mounted project
+      - gradle-cache:/home/bun/.gradle         # persist Gradle caches
+    # --- hardening ---
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 512
+    mem_limit: 4g
+    cpus: "2.0"
+
+volumes:
+  gradle-cache:

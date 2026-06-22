@@ -1,0 +1,5 @@
+.git
+.devenv
+node_modules
+docs
+tests/fixtures

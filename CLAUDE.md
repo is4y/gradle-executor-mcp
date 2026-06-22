@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Status
 
-This repository currently contains only a development-environment scaffold — there is no application code, build, or test suite yet. The notes below describe the environment so future work can start quickly. Update this file as real code lands.
+This repository contains `gradle-mcp`, a containerized MCP server that runs Gradle tasks against a mounted project. The server is fully implemented with 30 passing tests, argument safety (no shell, denylist), and output control. Container hardening (non-root, read-only FS, cap_drop ALL, limits, timeout) is applied via Docker Compose. See [SPEC.md](.superpowers/sdd/spec.md) and [PLAN.md](.superpowers/sdd/plan.md) for architecture and design details.
 
 ## Development environment
 
@@ -18,9 +18,11 @@ Available packages in the shell: `git`, `claude-code`, `curl`, `bun`.
 ### Common commands
 
 - `devenv shell` — enter the dev shell with all packages available (handled automatically in the devcontainer via direnv).
-- `bun ...` — JavaScript/TypeScript runtime, package manager, and test runner once a Bun project is initialized (e.g. `bun install`, `bun test`, `bun run <script>`).
-
-When adding scripts, builds, lint, or tests, record the exact commands here (including how to run a single test).
+- `bun install` — install dependencies.
+- `bun test` — run the full test suite. Run one file: `bun test src/arg-policy.test.ts`. Gradle integration tests skip when no `gradle` is on PATH.
+- `bun run typecheck` — run TypeScript type checking.
+- `bun run start` — start the MCP server (requires `PROJECT_DIR`).
+- `docker compose up --build` — run the hardened container (edit the project volume first).
 
 ## Key files
 
@@ -28,3 +30,5 @@ When adding scripts, builds, lint, or tests, record the exact commands here (inc
 - [devenv.yaml](devenv.yaml) — devenv inputs (nixpkgs rolling, `allowUnfree`).
 - [.devcontainer.json](.devcontainer.json) — devcontainer image, VS Code extensions, and mounts (binds the host `~/.claude` and `~/.config/claude` into the container).
 - `.gitignore` — ignores `.devenv` and `node_modules`.
+- [.superpowers/sdd/spec.md](.superpowers/sdd/spec.md) — full feature specification.
+- [.superpowers/sdd/plan.md](.superpowers/sdd/plan.md) — implementation plan (Tasks 1–10).
