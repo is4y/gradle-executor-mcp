@@ -15,6 +15,7 @@ jobs:
     permissions:
       contents: read
       packages: write
+      actions: write   # required for cache-to: type=gha (Actions cache API)
     steps:
       - uses: actions/checkout@v4
 
