@@ -30,7 +30,7 @@ test("validateArgs rejects code-execution / escape flags", () => {
     ["--init-script", "/tmp/evil.gradle"], ["-I", "x"], ["--include-build", "../o"],
     ["-b", "evil.gradle"], ["--build-file", "x"], ["-c", "s.gradle"],
     ["--settings-file", "x"], ["-p", "/other"], ["--project-dir", "/other"],
-    ["--system-prop", "x=y"], ["--init-script=/tmp/x"],
+    ["--system-prop", "x=y"], ["--init-script=/tmp/x"], ["--init-script:/tmp/x"],
   ]) {
     expect(() => validateArgs(bad, false)).toThrow(PolicyError);
   }
@@ -40,4 +40,5 @@ test("validateArgs gates -D/-P on allowPropertyFlags", () => {
   expect(() => validateArgs(["-Dfoo=bar"], false)).toThrow(PolicyError);
   expect(() => validateArgs(["-Pprod"], false)).toThrow(PolicyError);
   expect(validateArgs(["-Dfoo=bar"], true)).toEqual(["-Dfoo=bar"]);
+  expect(validateArgs(["-Pprod"], true)).toEqual(["-Pprod"]);
 });
