@@ -4,14 +4,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Status
 
-This repository contains `gradle-mcp`, a containerized MCP server that runs Gradle tasks against a mounted project. The server is fully implemented with 30 passing tests, argument safety (no shell, denylist), and output control. Container hardening (non-root, read-only FS, cap_drop ALL, limits, timeout) is applied via Docker Compose. See [SPEC.md](.superpowers/sdd/spec.md) and [PLAN.md](.superpowers/sdd/plan.md) for architecture and design details.
+This repository contains `gradle-mcp`, a containerized MCP server that runs Gradle tasks against a mounted project. The server is fully implemented with 30 passing tests, argument safety (no shell, denylist), and output control. Container hardening (non-root, read-only FS, cap_drop ALL, limits, timeout) is applied via Docker Compose. See [SPEC.md](docs/superpowers/specs/2026-06-22-gradle-mcp-sandbox-design.md) and [PLAN.md](docs/superpowers/plans/2026-06-22-gradle-mcp-sandbox.md) for architecture and design details.
 
 ## Development environment
 
 The environment is defined with [devenv](https://devenv.sh) on top of Nix, and is intended to run inside the devcontainer (`.devcontainer.json`, image `ghcr.io/cachix/devenv/devcontainer:latest`). [devenv.nix](devenv.nix) enables:
 
 - **Nix** (`languages.nix`)
-- **JavaScript via Bun** (`languages.javascript.bun`) — Bun is the package manager and runtime; there is no `package.json` yet.
+- **JavaScript via Bun** (`languages.javascript.bun`) — Bun is the package manager and runtime.
 
 Available packages in the shell: `git`, `claude-code`, `curl`, `bun`.
 
@@ -30,5 +30,5 @@ Available packages in the shell: `git`, `claude-code`, `curl`, `bun`.
 - [devenv.yaml](devenv.yaml) — devenv inputs (nixpkgs rolling, `allowUnfree`).
 - [.devcontainer.json](.devcontainer.json) — devcontainer image, VS Code extensions, and mounts (binds the host `~/.claude` and `~/.config/claude` into the container).
 - `.gitignore` — ignores `.devenv` and `node_modules`.
-- [.superpowers/sdd/spec.md](.superpowers/sdd/spec.md) — full feature specification.
-- [.superpowers/sdd/plan.md](.superpowers/sdd/plan.md) — implementation plan (Tasks 1–10).
+- [docs/superpowers/specs/2026-06-22-gradle-mcp-sandbox-design.md](docs/superpowers/specs/2026-06-22-gradle-mcp-sandbox-design.md) — full feature specification.
+- [docs/superpowers/plans/2026-06-22-gradle-mcp-sandbox.md](docs/superpowers/plans/2026-06-22-gradle-mcp-sandbox.md) — implementation plan (Tasks 1–10).

@@ -37,7 +37,8 @@ There is no app-level auth — only expose the port on a trusted/loopback networ
 - **Argument denylist:** `--init-script`, `-I`, `--include-build`, `-b/--build-file`,
   `-c/--settings-file`, `-p/--project-dir`, `--system-prop`, and (by default) `-D`/`-P` are rejected.
 - **The container is the real boundary:** non-root, read-only FS, `cap_drop: ALL`,
-  `no-new-privileges`, pids/mem/cpu limits, timeout, and restricted egress (Gradle proxy).
+  `no-new-privileges`, pids/mem/cpu limits, and timeout. Egress control is opt-in — see
+  the commented `JAVA_OPTS` in `docker-compose.yml` to route Gradle through an allowlisting proxy.
 - Builds run arbitrary code by design — never point this at an untrusted project without the container hardening.
 
 ## Development
