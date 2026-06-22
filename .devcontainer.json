@@ -1,0 +1,18 @@
+{
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "mkhl.direnv",
+        "anthropic.claude-code",
+        "jnoortheen.nix-ide"
+      ]
+    }
+  },
+  "image": "ghcr.io/cachix/devenv/devcontainer:latest",
+  "mounts": [
+    "source=${localEnv:HOME}/.claude,target=/home/vscode/.claude,type=bind,consistency=cached",
+    "source=${localEnv:HOME}/.config/claude,target=/home/vscode/.config/claude,type=bind,consistency=cached",
+    "source=nix-store,target=/nix,type=volume"
+  ],
+  "overrideCommand": false
+}
