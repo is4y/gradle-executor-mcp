@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Status
 
-This repository contains `gradle-mcp`, a containerized MCP server that runs Gradle tasks against a mounted project. The server is fully implemented with 30 passing tests, argument safety (no shell, denylist), and output control. Container hardening (non-root, read-only FS, cap_drop ALL, limits, timeout) is applied via Docker Compose. See [SPEC.md](docs/superpowers/specs/2026-06-22-gradle-mcp-sandbox-design.md) and [PLAN.md](docs/superpowers/plans/2026-06-22-gradle-mcp-sandbox.md) for architecture and design details.
+This repository contains `gradle-mcp`, a containerized MCP server that runs Gradle tasks against a mounted project. The server is fully implemented with 25 passing tests, argument safety (no shell, no free-form flags), and output control. Container hardening (non-root, read-only FS, cap_drop ALL, limits, timeout) is applied via Docker Compose. See [SPEC.md](docs/superpowers/specs/2026-06-22-gradle-mcp-sandbox-design.md) and [PLAN.md](docs/superpowers/plans/2026-06-22-gradle-mcp-sandbox.md) for architecture and design details.
 
 ## Development environment
 

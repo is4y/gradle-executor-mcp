@@ -1,5 +1,7 @@
 # Gradle MCP Sandbox — Design
 
+> Superseded in part by [remove-args-input-design](2026-06-22-remove-args-input-design.md): the `args` input and the flag denylist described below were later removed.
+
 **Date:** 2026-06-22
 **Status:** Approved (design); ready for implementation planning
 
@@ -53,11 +55,8 @@ Each unit has one purpose, a clear interface, and is testable in isolation.
   - `GRADLE_TIMEOUT_MS` — per-build wall-clock timeout; build is killed on expiry.
   - `DEFAULT_OUTPUT_LINES` — output lines returned when a call omits `maxOutputLines`.
   - `MAX_OUTPUT_LINES` — hard ceiling; a call requesting more is clamped to this.
-  - `ALLOW_PROPERTY_FLAGS` (optional, default off) — if set, permits `-D`/`-P` flags.
-
 - **`arg-policy.ts`** — pure validation, no I/O. Turns agent input into a safe argv or throws.
   - `validateTask(task: string)` — must match `^[A-Za-z0-9:._-]+$`.
-  - `validateArgs(args: string[])` — applies the denylist (see Security model).
   - `validateTestFilters(tests: string[])` — validates `--tests` patterns.
   - Returns the sanitized argv array; throws a descriptive error on any violation.
 
@@ -86,14 +85,14 @@ Each unit has one purpose, a clear interface, and is testable in isolation.
 - Runs the `tasks` task through `gradle-runner` (so the same wrapper-preferred resolution
   applies) and returns the task listing text (tail-limited to `DEFAULT_OUTPUT_LINES`).
 
-### `run_gradle_task({ task: string, args?: string[], maxOutputLines?: number })`
+### `run_gradle_task({ task: string, maxOutputLines?: number })`
 - Exactly **one** task per call.
-- `task` validated against `^[A-Za-z0-9:._-]+$`; `args` validated against the denylist.
-- Runs `./gradlew <task> <args>`.
+- `task` validated against `^[A-Za-z0-9:._-]+$`.
+- Runs `./gradlew <task>`.
 - Returns `{ exitCode, stdout, stderr }`, output tail-kept to
   `min(maxOutputLines ?? DEFAULT_OUTPUT_LINES, MAX_OUTPUT_LINES)`.
 
-### `run_tests({ tests?: string[], args?: string[], maxOutputLines?: number })`
+### `run_tests({ tests?: string[], maxOutputLines?: number })`
 - Runs the `test` task, optionally with `--tests <pattern>` filters built from `tests`.
 - Same validation, same buffered result shape and output limiting as `run_gradle_task`.
 - No XML report parsing — raw buffered output (per decision).
@@ -108,11 +107,7 @@ Each unit has one purpose, a clear interface, and is testable in isolation.
 3. **Argument policy** (`arg-policy.ts`):
    - Task name must match `^[A-Za-z0-9:._-]+$`.
    - `--tests` patterns are validated.
-   - **Denylist** rejects code-execution / sandbox-escape flags, including:
-     `--init-script` / `-I`, `--include-build`, `-b` / `--build-file`,
-     `-c` / `--settings-file`, `-p` / `--project-dir`, `--system-prop`, and arbitrary
-     `-D` / `-P` (unless `ALLOW_PROPERTY_FLAGS` is set).
-   - Anything not explicitly allowed is rejected.
+   - No free-form flags are accepted; only the validated task name and `--tests` filters reach Gradle.
 4. **Path pinning.** `cwd` is fixed to `PROJECT_DIR`; no agent input selects paths.
 5. **Container hardening** (documentation + provided run/compose config — not server logic):
    - Non-root user.
@@ -131,8 +126,7 @@ Each unit has one purpose, a clear interface, and is testable in isolation.
 
 ## Testing (TDD)
 
-- **Unit — `arg-policy.ts`** (security-critical): valid tasks; injection attempts; each
-  denylisted flag; `--tests` validation; property-flag gating.
+- **Unit — `arg-policy.ts`** (security-critical): valid tasks; injection attempts; `--tests` validation.
 - **Unit — `output.ts`**: tail-keeping, truncation marker, no-op when under the limit.
 - **Integration** against a tiny fixture Gradle project:
   - `list_tasks` returns tasks.

@@ -1,5 +1,10 @@
 # Gradle MCP Sandbox Implementation Plan
 
+> **Update (2026-06-22):** The `args` tool input and the Gradle-flag denylist
+> (`validateArgs`, `DENY_FLAGS`, `ALLOW_PROPERTY_FLAGS`) described in Tasks 4 and 7–10
+> below were subsequently removed. See
+> [remove-args-input](2026-06-22-remove-args-input.md).
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Build a containerized MCP server (TypeScript on Bun) that lets agents run Gradle tasks/tests against one mounted project over streamable HTTP, with a no-shell argument-safety layer and container-level isolation.

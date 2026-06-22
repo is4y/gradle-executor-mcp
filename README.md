@@ -5,8 +5,8 @@ mounted project over streamable HTTP, with a no-shell argument-safety layer.
 
 ## Tools
 - `list_tasks()` — list the project's Gradle tasks.
-- `run_gradle_task({ task, args?, maxOutputLines? })` — run one task.
-- `run_tests({ tests?, args?, maxOutputLines? })` — run the `test` task, optional `--tests` filters.
+- `run_gradle_task({ task, maxOutputLines? })` — run one task.
+- `run_tests({ tests?, maxOutputLines? })` — run the `test` task, optional `--tests` filters.
 
 All output is buffered, returned as `{ exitCode, stdout, stderr, timedOut }`,
 and tail-limited to `maxOutputLines` (default 500, ceiling 5000).
@@ -19,7 +19,6 @@ and tail-limited to `maxOutputLines` (default 500, ceiling 5000).
 | `GRADLE_TIMEOUT_MS` | 600000 | Per-build timeout (build killed on expiry) |
 | `DEFAULT_OUTPUT_LINES` | 500 | Output lines when a call omits `maxOutputLines` |
 | `MAX_OUTPUT_LINES` | 5000 | Hard ceiling for output lines |
-| `ALLOW_PROPERTY_FLAGS` | false | Permit `-D`/`-P` flags |
 
 ## Run
 ```bash
@@ -34,8 +33,10 @@ There is no app-level auth — only expose the port on a trusted/loopback networ
 
 ## Security model
 - **No shell:** Gradle is spawned with an argv array; classic command injection is impossible.
-- **Argument denylist:** `--init-script`, `-I`, `--include-build`, `-b/--build-file`,
-  `-c/--settings-file`, `-p/--project-dir`, `--system-prop`, and (by default) `-D`/`-P` are rejected.
+- **No free-form flags:** callers cannot pass arbitrary Gradle flags. The only inputs are a
+  task name (`^[A-Za-z0-9:._-]+$`), `--tests` filters (`^[A-Za-z0-9:._*$#-]+$`), and a numeric
+  output cap — so code-execution / sandbox-escape flags (`--init-script`, `--build-file`,
+  `--project-dir`, `-D`/`-P`, etc.) are not expressible.
 - **The container is the real boundary:** non-root, read-only FS, `cap_drop: ALL`,
   `no-new-privileges`, pids/mem/cpu limits, and timeout. Egress control is opt-in — see
   the commented `JAVA_OPTS` in `docker-compose.yml` to route Gradle through an allowlisting proxy.

@@ -9,7 +9,6 @@ services:
       GRADLE_TIMEOUT_MS: "600000"
       DEFAULT_OUTPUT_LINES: "500"
       MAX_OUTPUT_LINES: "5000"
-      # ALLOW_PROPERTY_FLAGS: "true"   # opt-in to -D/-P
       # Egress control via Gradle proxy (point at an allowlisting proxy):
       # JAVA_OPTS: "-Dhttps.proxyHost=proxy -Dhttps.proxyPort=3128"
     volumes:
