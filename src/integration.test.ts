@@ -3,6 +3,7 @@ import { which } from "bun";
 import { runGradleTask, listTasks } from "./tools";
 import { SerialQueue } from "./queue";
 import { runGradle } from "./gradle-runner";
+import { PolicyError } from "./arg-policy";
 import type { Config } from "./config";
 
 const projectDir = `${import.meta.dir}/../tests/fixtures/real-project`;
@@ -34,5 +35,5 @@ test.if(hasGradle)("a failing task exits non-zero with output", async () => {
 
 test("denied flag is rejected without executing (no Gradle needed)", async () => {
   await expect(runGradleTask(deps, { task: "succeed", args: ["--init-script", "/tmp/x"] }))
-    .rejects.toThrow();
+    .rejects.toThrow(PolicyError);
 });

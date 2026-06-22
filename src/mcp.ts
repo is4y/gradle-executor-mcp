@@ -8,7 +8,7 @@ export const TOOL_NAMES = ["list_tasks", "run_gradle_task", "run_tests"] as cons
 
 function ok(result: ToolResult) {
   return {
-    content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }],
+    content: [{ type: "text" as const, text: JSON.stringify(result) }],
     isError: result.exitCode !== 0,
   };
 }
