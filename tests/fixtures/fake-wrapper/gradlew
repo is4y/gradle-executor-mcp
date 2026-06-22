@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# Fake gradlew for tests. Echoes args, supports a sleep + exit-code protocol.
+echo "ARGS:$*"
+echo "to stderr" 1>&2
+for a in "$@"; do
+  case "$a" in
+    SLEEP=*) sleep "${a#SLEEP=}";;
+    EXIT=*)  exit "${a#EXIT=}";;
+  esac
+done
+exit 0
