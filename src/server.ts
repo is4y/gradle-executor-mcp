@@ -19,12 +19,22 @@ const httpServer = createServer(async (req, res) => {
   });
   await server.connect(transport);
 
-  // Collect the request body for the transport.
-  const chunks: Buffer[] = [];
-  for await (const chunk of req) chunks.push(chunk as Buffer);
-  const body = chunks.length ? JSON.parse(Buffer.concat(chunks).toString()) : undefined;
+  try {
+    // Collect the request body for the transport.
+    const chunks: Buffer[] = [];
+    for await (const chunk of req) chunks.push(chunk as Buffer);
+    const body = chunks.length ? JSON.parse(Buffer.concat(chunks).toString()) : undefined;
 
-  await transport.handleRequest(req, res, body);
+    await transport.handleRequest(req, res, body);
+  } catch (_err) {
+    // JSON.parse threw (malformed body) or handleRequest threw before sending
+    // a response — return a JSON-RPC parse-error so the client gets a 400
+    // instead of a hung/closed connection.
+    if (!res.headersSent) {
+      res.writeHead(400, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ jsonrpc: "2.0", error: { code: -32700, message: "Parse error" }, id: null }));
+    }
+  }
 });
 
 httpServer.listen(config.port, () => {
