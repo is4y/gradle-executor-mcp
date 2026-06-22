@@ -6,11 +6,28 @@ on:
     tags: ["v*"]
 
 jobs:
+  # Tag pushes can't be branch-filtered in `on:`, so gate the release on the
+  # tagged commit actually being contained in main.
+  verify-tag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Ensure tag is on main
+        run: |
+          git fetch --no-tags origin main
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+            echo "::error::Tag ${GITHUB_REF_NAME} points at a commit not on main; refusing to release."
+            exit 1
+          fi
+
   test:
+    needs: verify-tag
     uses: ./.github/workflows/test.yml
 
   publish:
-    needs: test
+    needs: [verify-tag, test]
     runs-on: ubuntu-latest
     permissions:
       contents: read
