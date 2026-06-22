@@ -132,7 +132,6 @@ Each unit has one purpose, a clear interface, and is testable in isolation.
   - `list_tasks` returns tasks.
   - a passing build → `exitCode 0`.
   - a failing build → non-zero `exitCode` with output.
-  - a denied-flag attempt → rejected without execution.
 - Run with `bun test`.
 
 ## Delivery
