@@ -33,7 +33,6 @@ export async function runGradle(
     proc.kill(9); // SIGKILL — immediate death so proc.exited resolves promptly
   }, timeoutMs);
 
-  const decoder = new TextDecoder();
   let stdout = "";
   let stderr = "";
 
@@ -44,6 +43,7 @@ export async function runGradle(
     stream: ReadableStream<Uint8Array>,
     append: (s: string) => void,
   ): Promise<void> {
+    const decoder = new TextDecoder();
     try {
       for await (const chunk of stream) {
         append(decoder.decode(chunk, { stream: true }));
