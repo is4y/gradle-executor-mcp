@@ -14,5 +14,14 @@
     "source=${localEnv:HOME}/.config/claude,target=/home/vscode/.config/claude,type=bind,consistency=cached",
     "source=nix-store,target=/nix,type=volume"
   ],
+  "runArgs": ["--runtime", "runsc"],
+  "remoteEnv": {
+    "SSH_AUTH_SOCK": "",
+    "GPG_AGENT_INFO": ""
+  },
+  "postCreateCommand": "bash .devcontainer/setup-ssh-hardening.sh",
+  "postStartCommand": "nohup bash .devcontainer/ssh-socket-cleanup.sh >/dev/null 2>&1 &",
+  "remoteUser": "vscode",
+  "containerUser": "root",
   "overrideCommand": false
 }

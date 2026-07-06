@@ -11,9 +11,27 @@ This repository contains `gradle-mcp`, a containerized MCP server that runs Grad
 The environment is defined with [devenv](https://devenv.sh) on top of Nix, and is intended to run inside the devcontainer (`.devcontainer.json`, image `ghcr.io/cachix/devenv/devcontainer:latest`). [devenv.nix](devenv.nix) enables:
 
 - **Nix** (`languages.nix`)
-- **JavaScript via Bun** (`languages.javascript.bun`) — Bun is the package manager and runtime.
+- **JavaScript via Bun** (`languages.javascript.bun`) — Bun is the package manager and runtime; there is no `package.json` yet.
 
-Available packages in the shell: `git`, `claude-code`, `curl`, `bun`.
+Available packages in the shell: `git`, `gh` , `claude-code`, `curl`, `bun`.
+If you need a package that is not installed ask the user.
+
+### Running commands (IMPORTANT for agents)
+
+All project tooling (`bun`, `git`, `gh`, `curl`, and anything added to [devenv.nix](devenv.nix)) is provided by the devenv shell. Tool calls (e.g. Bash) do **not** automatically inherit this environment — direnv only activates it for interactive shells. So every command an agent runs MUST be executed inside the devenv shell:
+
+- **Run commands non-interactively with `devenv shell -- <command>`.** Examples:
+  - `devenv shell -- bun install`
+  - `devenv shell -- bun test`
+  - `devenv shell -- bun run <script>`
+- Do **not** call `bun`/project tools directly (e.g. bare `bun test`) — outside the devenv shell they may be missing or resolve to the wrong version.
+- If a command unexpectedly reports a tool as "not found", you almost certainly forgot the `devenv shell -- ` prefix.
+
+### Common commands
+
+- `devenv shell` — enter the dev shell interactively with all packages available (handled automatically in the devcontainer via direnv).
+- `devenv shell -- <command>` — run a single `<command>` inside the dev shell (use this for tool calls).
+- `bun ...` — JavaScript/TypeScript runtime, package manager, and test runner once a Bun project is initialized (e.g. `devenv shell -- bun install`, `devenv shell -- bun test`, `devenv shell -- bun run <script>`).
 
 ### Common commands
 
