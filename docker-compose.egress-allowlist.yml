@@ -1,0 +1,62 @@
+# Egress-restricted variant of docker-compose.yml.
+#
+# gradle-mcp runs on an INTERNAL Docker network with no route to the internet.
+# Its only way out is the JVM proxy pointed at the `squid` sidecar, which
+# enforces a domain allowlist (see squid/allowlist.txt) and denies everything
+# else. Even a build that ignores the proxy env has no network route off the
+# internal net.
+#
+# Usage:
+#   1. Point the ./your-gradle-project volume at your project (below).
+#   2. Edit squid/allowlist.txt to match what your build needs.
+#   3. docker compose -f docker-compose.egress-allowlist.yml up --build
+services:
+  gradle-mcp:
+    build: .
+    ports:
+      - "127.0.0.1:3000:3000"   # bind to loopback only; rely on network isolation
+    environment:
+      PROJECT_DIR: /project
+      PORT: "3000"
+      GRADLE_TIMEOUT_MS: "600000"
+      DEFAULT_OUTPUT_LINES: "500"
+      MAX_OUTPUT_LINES: "5000"
+      # Route all JVM HTTP(S) traffic through the allowlisting Squid proxy.
+      JAVA_OPTS: >-
+        -Dhttp.proxyHost=squid -Dhttp.proxyPort=3128
+        -Dhttps.proxyHost=squid -Dhttps.proxyPort=3128
+    volumes:
+      - ./your-gradle-project:/project:rw      # the mounted project
+      - gradle-cache:/home/app/.gradle         # persist Gradle caches
+    depends_on:
+      - squid
+    networks:
+      - internal
+    # --- hardening (identical to docker-compose.yml) ---
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 512
+    mem_limit: 4g
+    cpus: "2.0"
+
+  squid:
+    image: ubuntu/squid:6.6-24.04_edge
+    volumes:
+      - ./squid/squid.conf:/etc/squid/squid.conf:ro
+      - ./squid/allowlist.txt:/etc/squid/allowlist.txt:ro
+    networks:
+      - internal   # reachable by gradle-mcp
+      - egress     # the only path to the internet
+
+networks:
+  internal:
+    internal: true   # no gateway to the outside world
+  egress: {}
+
+volumes:
+  gradle-cache:
