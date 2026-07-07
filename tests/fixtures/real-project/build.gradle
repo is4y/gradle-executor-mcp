@@ -1,6 +1,13 @@
+// A `group` is required for these to appear in the default `gradle tasks`
+// output; since Gradle 9 ungrouped tasks are only listed with `--all`, which
+// the list_tasks integration test relies on.
 tasks.register('succeed') {
+    group = 'verification'
+    description = 'Prints a marker and succeeds.'
     doLast { println 'SUCCEED_OK' }
 }
 tasks.register('fail') {
+    group = 'verification'
+    description = 'Throws to exercise the failure path.'
     doLast { throw new GradleException('intentional failure') }
 }

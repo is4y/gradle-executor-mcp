@@ -14,21 +14,27 @@ const config: Config = {
 };
 const deps = { config, queue: new SerialQueue(), run: runGradle };
 
+// A real Gradle invocation (cold JVM + daemon startup + first-run init) easily
+// exceeds Bun's 5s default per-test timeout, so these would fail spuriously in
+// CI. Allow the full configured Gradle budget plus overhead — the gradle-runner
+// still enforces gradleTimeoutMs internally.
+const GRADLE_TEST_TIMEOUT_MS = config.gradleTimeoutMs + 30_000;
+
 test.if(hasGradle)("list_tasks returns the project tasks", async () => {
   const r = await listTasks(deps);
   expect(r.exitCode).toBe(0);
   expect(r.stdout).toContain("succeed");
-});
+}, GRADLE_TEST_TIMEOUT_MS);
 
 test.if(hasGradle)("a passing task exits 0", async () => {
   const r = await runGradleTask(deps, { task: "succeed" });
   expect(r.exitCode).toBe(0);
   expect(r.stdout).toContain("SUCCEED_OK");
-});
+}, GRADLE_TEST_TIMEOUT_MS);
 
 test.if(hasGradle)("a failing task exits non-zero with output", async () => {
   const r = await runGradleTask(deps, { task: "fail" });
   expect(r.exitCode).not.toBe(0);
   expect(r.stdout + r.stderr).toContain("intentional failure");
-});
+}, GRADLE_TEST_TIMEOUT_MS);
 
