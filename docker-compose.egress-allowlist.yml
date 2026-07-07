@@ -22,7 +22,10 @@ services:
       DEFAULT_OUTPUT_LINES: "500"
       MAX_OUTPUT_LINES: "5000"
       # Route all JVM HTTP(S) traffic through the allowlisting Squid proxy.
-      JAVA_OPTS: >-
+      # JAVA_TOOL_OPTIONS is read by EVERY JVM started in the container, so the
+      # proxy also reaches the long-lived Gradle daemon that resolves dependencies —
+      # unlike launcher-only settings, it applies to all processes spawned here.
+      JAVA_TOOL_OPTIONS: >-
         -Dhttp.proxyHost=squid -Dhttp.proxyPort=3128
         -Dhttps.proxyHost=squid -Dhttps.proxyPort=3128
     volumes:

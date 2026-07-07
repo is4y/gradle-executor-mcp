@@ -51,6 +51,12 @@ The MCP endpoint is at `http://127.0.0.1:3000/` as usual. Edit
 matches subdomains) and restart to change what's reachable. Blocked and allowed
 requests are visible in `docker compose -f docker-compose.egress-allowlist.yml logs squid`.
 
+> **If `http://127.0.0.1:3000/` is unreachable**, your Docker version may be
+> refusing to publish a port from an `internal`-only network. Add a second
+> network `frontend:` with `internal: true` and attach it to the `gradle-mcp`
+> service alongside `internal`. Both networks stay internal, so egress remains
+> blocked — this only restores host access to the published port.
+
 ## Connecting an agent
 Configure your MCP client with a streamable-HTTP server URL of `http://127.0.0.1:3000/`.
 There is no app-level auth — only expose the port on a trusted/loopback network.
