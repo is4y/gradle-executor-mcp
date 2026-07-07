@@ -27,6 +27,36 @@ docker compose up --build
 ```
 The MCP endpoint is then at `http://127.0.0.1:3000/`.
 
+## Egress allowlist example
+
+`docker-compose.yml` leaves network egress open. To restrict a build to a fixed
+set of domains, use the egress-allowlist variant instead. It runs `gradle-mcp`
+on an **internal** Docker network with no internet route and forces all traffic
+through a [Squid](http://www.squid-cache.org/) proxy that enforces a domain
+allowlist (default-deny). Denied domains get a `403`; a build that ignores the
+proxy env still has no route off the internal network.
+
+No TLS interception happens — connections stay end-to-end encrypted, and no CA
+cert is added to the JVM. Only the *destination domain* is checked.
+
+```bash
+# 1. Point the ./your-gradle-project volume at your project (edit the compose file).
+# 2. Edit squid/allowlist.txt to list the domains your build needs.
+# 3. Run:
+docker compose -f docker-compose.egress-allowlist.yml up --build
+```
+
+The MCP endpoint is at `http://127.0.0.1:3000/` as usual. Edit
+[`squid/allowlist.txt`](squid/allowlist.txt) (one domain per line; a leading dot
+matches subdomains) and restart to change what's reachable. Blocked and allowed
+requests are visible in `docker compose -f docker-compose.egress-allowlist.yml logs squid`.
+
+> **If `http://127.0.0.1:3000/` is unreachable**, your Docker version may be
+> refusing to publish a port from an `internal`-only network. Add a second
+> network `frontend:` with `internal: true` and attach it to the `gradle-mcp`
+> service alongside `internal`. Both networks stay internal, so egress remains
+> blocked — this only restores host access to the published port.
+
 ## Connecting an agent
 Configure your MCP client with a streamable-HTTP server URL of `http://127.0.0.1:3000/`.
 There is no app-level auth — only expose the port on a trusted/loopback network.

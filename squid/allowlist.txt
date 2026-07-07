@@ -1,0 +1,10 @@
+# Domains gradle-mcp is allowed to reach. One per line.
+# A leading dot matches the domain AND all its subdomains
+# (e.g. .gradle.org covers services.gradle.org, plugins.gradle.org).
+# A bare domain matches only that exact host.
+# Edit this list to match what YOUR build actually needs, then restart the proxy.
+
+.gradle.org            # Gradle distributions, plugin portal, plugin artifacts
+.maven.apache.org      # Maven Central (repo.maven.apache.org)
+repo1.maven.org        # Maven Central (alternate host)
+dl.google.com          # Google's Maven repo (Android / AndroidX)
